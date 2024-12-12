@@ -12,7 +12,7 @@ export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
     --info="right"'
 
 # Define a list of supported environments
-ENVIRONMENTS=("harry" "john" "jupiter" "mars" "mercury" "neptune" "pluto" "saturn" "venus")
+ENVIRONMENTS=("europa" "harry" "john" "jupiter" "mars" "mercury" "neptune" "pluto" "saturn" "venus")
 
 # Define a whitelist of allowed root directory names
 WHITELIST=("service-panel" "module-surveys-web" "module-surveys-respondent")
@@ -85,14 +85,27 @@ check_install_fzf() {
 select_branch() {
     echo "Fetching remote branches..."
     git fetch --all
-    branch=$(git branch -r | awk -F'origin/' '{print $NF}' | sort -u | fzf --height ~20)
+    current_branch=$(git rev-parse --abbrev-ref HEAD)    
+    branch=$(git branch -r | awk -F'/' '{print $NF}' | sort -u | \
+        awk -v cb="$current_branch" 'BEGIN {print cb} $0 != cb' | \
+        fzf --height=20)
     echo "Selected Branch: $branch"
+
+    if [ -z "$branch" ]; then
+        echo "Error: Branch not selected."
+        exit 1
+    fi
 }
 
 # Function to select environment using fzf
 select_environment() {
     env=$(printf '%s\n' "${ENVIRONMENTS[@]}" | fzf --height ~20)
     echo "Selected Environment: $env"
+
+    if [ -z "$env" ]; then
+        echo "Error: Environment not selected."
+        exit 1
+    fi
 }
 
 # Main script execution
@@ -102,7 +115,7 @@ select_branch
 select_environment
 
 # AWS Login
-aws sso login --profile FrontendAccess-740402464676
+aws sso login --profile testing # FrontendAccess-740402464676
 
 # Deploy
 ~/Workspace/env-development/tools/deploy-branch.sh ${env}-${pipeline_name} $branch

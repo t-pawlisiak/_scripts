@@ -12,7 +12,7 @@ export FZF_DEFAULT_OPTS=$FZF_DEFAULT_OPTS'
     --info="right"'
 
 # Define a list of supported environments
-ENVIRONMENTS=("harry" "john" "jupiter" "mars" "mercury" "neptune" "pluto" "saturn" "venus")
+ENVIRONMENTS=("europa" "harry" "john" "jupiter" "mars" "mercury" "neptune" "pluto" "saturn" "venus")
 
 # Define a whitelist of allowed root directory names
 WHITELIST=("service-panel")
@@ -86,6 +86,11 @@ check_install_fzf() {
 select_environment() {
     env=$(printf '%s\n' "${ENVIRONMENTS[@]}" | fzf --height ~20)
     echo "Selected Environment: $env"
+
+    if [ -z "$env" ]; then
+        echo "Error: Environment not selected."
+        exit 1
+    fi
 }
 
 # Main script execution

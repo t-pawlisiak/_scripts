@@ -82,8 +82,15 @@ check_install_fzf() {
 select_branch() {
     echo "Fetching remote branches..."
     git fetch --all
-    branch=$(git branch -r | awk -F'/' '{print $NF}' | sort -u | fzf --height ~20)
+    branch=$(git branch -r | awk -F'/' '{print $NF}' | sort -u | \
+        awk -v cb=development 'BEGIN {print cb} $0 != cb' | \
+        fzf --height=20)
     echo "Selected Branch: $branch"
+
+    if [ -z "$branch" ]; then
+        echo "Error: Branch not selected."
+        exit 1
+    fi
 }
 
 # Main script execution
@@ -98,6 +105,3 @@ git pull origin $branch
 
 # Deploy
 ~/Workspace/env-development/tools/deploy production
-
-# Open AWS pipeline in browser 
-open https://eu-west-1.console.aws.amazon.com/codesuite/codepipeline/pipelines/prd-${pipeline_name}/view
